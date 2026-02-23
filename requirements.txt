@@ -1,0 +1,6 @@
+pipecat-ai-small-webrtc-prebuilt
+pipecat-ai[assemblyai,anthropic,rime,silero,webrtc]
+python-dotenv
+fastapi
+uvicorn[standard]
+httpx
