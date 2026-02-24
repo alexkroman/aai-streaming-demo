@@ -42,7 +42,7 @@ function parseAAIMessage(areaId, msg) {
   if (msg.type === "Turn") {
     const text = msg.transcript || msg.text || "";
     if (!text) return;
-    if (!msg.end_of_turn && !msg.turn_is_formatted) return;
+    if (!msg.turn_is_formatted) return;
     appendTranscript(areaId, text);
   }
 }
@@ -75,12 +75,12 @@ async function startRecording() {
 
     const connections = [
       connectSocket(
-        `${wssBase}?sample_rate=${sampleRate}&speech_model=u3-pro&token=${tokens[0]}&format_turns=true`,
+        `${wssBase}?sample_rate=${sampleRate}&speech_model=u3-pro&token=${tokens[0]}&format_turns=true&end_of_turn_confidence_threshold=0.8`,
         null,
         { areaId: "transcript-0", onMessage: (msg) => parseAAIMessage("transcript-0", msg) }
       ),
       connectSocket(
-        `${wssBase}?sample_rate=${sampleRate}&speech_model=universal-streaming-english&token=${tokens[1]}&format_turns=true`,
+        `${wssBase}?sample_rate=${sampleRate}&speech_model=universal-streaming-english&token=${tokens[1]}&format_turns=true&end_of_turn_confidence_threshold=0.8`,
         null,
         { areaId: "transcript-1", onMessage: (msg) => parseAAIMessage("transcript-1", msg) }
       ),
