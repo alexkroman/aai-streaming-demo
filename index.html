@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Streaming STT Model Comparison</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f1117; color: #e0e0e0; }
+  header { text-align: center; padding: 24px 16px 8px; }
+  header h1 { font-size: 1.6rem; color: #fff; margin-bottom: 4px; }
+  header p { font-size: 0.9rem; color: #888; }
+  .controls { text-align: center; padding: 16px; }
+  .controls button {
+    padding: 12px 32px; font-size: 1rem; border: none; border-radius: 8px;
+    cursor: pointer; font-weight: 600; transition: all 0.2s;
+  }
+  #startBtn { background: #3b82f6; color: #fff; }
+  #startBtn:hover { background: #2563eb; }
+  #startBtn.recording { background: #ef4444; }
+  #startBtn.recording:hover { background: #dc2626; }
+  #startBtn:disabled { background: #444; cursor: not-allowed; }
+  .status { text-align: center; padding: 4px; font-size: 0.85rem; color: #888; }
+  .columns {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;
+    padding: 16px; max-width: 1800px; margin: 0 auto; height: calc(100vh - 200px);
+  }
+  .column {
+    background: #1a1d27; border-radius: 12px; padding: 16px;
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  .column-header {
+    display: flex; align-items: center; gap: 8px;
+    padding-bottom: 12px; border-bottom: 1px solid #2a2d37; margin-bottom: 12px;
+  }
+  .model-badge {
+    font-size: 0.75rem; font-weight: 700; padding: 4px 10px;
+    border-radius: 20px; text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .model-badge.u3-pro { background: #3b82f620; color: #60a5fa; border: 1px solid #3b82f640; }
+  .model-badge.universal { background: #8b5cf620; color: #a78bfa; border: 1px solid #8b5cf640; }
+  .model-badge.deepgram { background: #10b98120; color: #34d399; border: 1px solid #10b98140; }
+  .column-header h2 { font-size: 1rem; font-weight: 600; white-space: nowrap; }
+  .transcript-area {
+    flex: 1; overflow-y: auto; padding-right: 8px;
+    scrollbar-width: thin; scrollbar-color: #333 transparent;
+  }
+  .turn {
+    padding: 8px 12px; margin-bottom: 8px; border-radius: 8px;
+    font-size: 0.95rem; line-height: 1.5; transition: all 0.2s;
+  }
+  .turn.final { color: #e0e0e0; background: #252836; border-left: 3px solid #3b82f6; }
+  .column:nth-child(2) .turn.final { border-left-color: #8b5cf6; }
+  .column:nth-child(3) .turn.final { border-left-color: #10b981; }
+  .turn.empty { color: #555; font-style: italic; }
+  .latency-badge {
+    font-size: 0.7rem; color: #666; float: right; margin-top: 2px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Streaming STT Model Comparison</h1>
+  <p>Compare AssemblyAI and Deepgram speech models in real time — same audio, side by side</p>
+</header>
+
+<div class="controls">
+  <button id="startBtn">Start Recording</button>
+</div>
+<div class="status" id="status"></div>
+
+<div class="columns">
+  <div class="column" id="col-0">
+    <div class="column-header">
+      <span class="model-badge u3-pro">u3-pro</span>
+      <h2>U3 Pro Streaming</h2>
+    </div>
+    <div class="transcript-area" id="transcript-0">
+      <div class="turn empty">Waiting for audio...</div>
+    </div>
+  </div>
+  <div class="column" id="col-1">
+    <div class="column-header">
+      <span class="model-badge universal">u-streaming</span>
+      <h2>Universal Streaming</h2>
+    </div>
+    <div class="transcript-area" id="transcript-1">
+      <div class="turn empty">Waiting for audio...</div>
+    </div>
+  </div>
+  <div class="column" id="col-2">
+    <div class="column-header">
+      <span class="model-badge deepgram">deepgram</span>
+      <h2>Deepgram Nova-3</h2>
+    </div>
+    <div class="transcript-area" id="transcript-2">
+      <div class="turn empty">Waiting for audio...</div>
+    </div>
+  </div>
+</div>
+
+<script src="/app.js"></script>
+</body>
+</html>

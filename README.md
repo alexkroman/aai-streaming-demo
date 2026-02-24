@@ -1,48 +1,36 @@
-# Voice Agent Demo
+# Streaming STT Model Comparison
 
-Real-time voice agent comparing AssemblyAI speech models side by side. Uses AssemblyAI streaming STT, Claude LLM, and Rime TTS, orchestrated by Pipecat.
+Real-time side-by-side comparison of three streaming speech-to-text models using the same microphone input:
+
+- **AssemblyAI U3 Pro** — AssemblyAI's latest streaming model
+- **AssemblyAI Universal Streaming** — AssemblyAI's general-purpose streaming model
+- **Deepgram Nova-3** — Deepgram's latest streaming model
 
 ## Setup
-
-Install dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-Set environment variables (or add to a `.env` file):
-
-```
-ASSEMBLYAI_API_KEY=your-key
-ANTHROPIC_API_KEY=your-key
-RIME_API_KEY=your-key
-```
-
-## Side-by-side comparison
-
-Open two terminals and run:
-
-**Terminal 1 — u3-pro (default model) on port 7860:**
+## Usage
 
 ```bash
-python voice_agent.py --transport webrtc --port 7860 --model u3-pro
+ASSEMBLYAI_API_KEY=your-key DEEPGRAM_API_KEY=your-key python comparison_demo.py
 ```
 
-**Terminal 2 — universal-streaming-english on port 7861:**
+Then open http://localhost:8000 in your browser and click **Start Recording**.
 
-```bash
-python voice_agent.py --transport webrtc --port 7861 --model universal-streaming-english
+### Options
+
+```
+--host HOST    Server host (default: localhost)
+--port PORT    Server port (default: 8000)
 ```
 
-Then open both in your browser side by side:
+## How it works
 
-- http://localhost:7860
-- http://localhost:7861
+1. The browser captures microphone audio and converts it to 16kHz PCM16 via an AudioWorklet
+2. Audio chunks are sent simultaneously to all three provider WebSockets
+3. Each pane displays partial (interim) and final transcription results independently
 
-## Available models
-
-| Flag value | Description |
-|---|---|
-| `u3-pro` | AssemblyAI U3 Pro (default) |
-| `universal-streaming-english` | AssemblyAI Universal Streaming (English) |
-| `universal-streaming-multilingual` | AssemblyAI Universal Streaming (Multilingual) |
+The Deepgram API key is optional. If `DEEPGRAM_API_KEY` is not set, the third pane will show a disabled message and the other two models will still work.
