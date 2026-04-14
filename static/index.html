@@ -22,7 +22,7 @@
   #startBtn:disabled { background: #444; cursor: not-allowed; }
   .status { text-align: center; padding: 4px; font-size: 0.85rem; color: #888; }
   .columns {
-    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;
+    display: grid; gap: 16px;
     padding: 16px; max-width: 1800px; margin: 0 auto; height: calc(100vh - 200px);
   }
   .column {
@@ -37,9 +37,6 @@
     font-size: 0.75rem; font-weight: 700; padding: 4px 10px;
     border-radius: 20px; text-transform: uppercase; letter-spacing: 0.5px;
   }
-  .model-badge.u3-pro { background: #3b82f620; color: #60a5fa; border: 1px solid #3b82f640; }
-  .model-badge.universal { background: #8b5cf620; color: #a78bfa; border: 1px solid #8b5cf640; }
-  .model-badge.deepgram { background: #10b98120; color: #34d399; border: 1px solid #10b98140; }
   .column-header h2 { font-size: 1rem; font-weight: 600; white-space: nowrap; }
   .transcript-area {
     flex: 1; overflow-y: auto; padding-right: 8px;
@@ -49,12 +46,11 @@
     padding: 8px 12px; margin-bottom: 8px; border-radius: 8px;
     font-size: 0.95rem; line-height: 1.5; transition: all 0.2s;
   }
-  .turn.final { color: #e0e0e0; background: #252836; border-left: 3px solid #3b82f6; }
-  .column:nth-child(2) .turn.final { border-left-color: #8b5cf6; }
-  .column:nth-child(3) .turn.final { border-left-color: #10b981; }
+  .turn.partial { color: #888; background: #1e2130; }
+  .turn.final { color: #e0e0e0; background: #252836; }
   .turn.empty { color: #555; font-style: italic; }
-  .latency-badge {
-    font-size: 0.7rem; color: #666; float: right; margin-top: 2px;
+  .turn.speech-started {
+    font-size: 0.85rem; font-style: italic;
   }
 </style>
 </head>
@@ -62,7 +58,7 @@
 
 <header>
   <h1>Streaming STT Model Comparison</h1>
-  <p>Compare AssemblyAI and Deepgram speech models in real time — same audio, side by side</p>
+  <p>Compare streaming speech models in real time — same audio, side by side</p>
 </header>
 
 <div class="controls">
@@ -70,35 +66,7 @@
 </div>
 <div class="status" id="status">&nbsp;</div>
 
-<div class="columns">
-  <div class="column" id="col-0">
-    <div class="column-header">
-      <span class="model-badge u3-pro">u3-pro</span>
-      <h2>U3 Pro Streaming</h2>
-    </div>
-    <div class="transcript-area" id="transcript-0">
-      <div class="turn empty">Waiting for audio...</div>
-    </div>
-  </div>
-  <div class="column" id="col-1">
-    <div class="column-header">
-      <span class="model-badge universal">u2-streaming</span>
-      <h2>Universal Streaming</h2>
-    </div>
-    <div class="transcript-area" id="transcript-1">
-      <div class="turn empty">Waiting for audio...</div>
-    </div>
-  </div>
-  <div class="column" id="col-2">
-    <div class="column-header">
-      <span class="model-badge deepgram">deepgram</span>
-      <h2>Deepgram Nova-3</h2>
-    </div>
-    <div class="transcript-area" id="transcript-2">
-      <div class="turn empty">Waiting for audio...</div>
-    </div>
-  </div>
-</div>
+<div class="columns" id="columns"></div>
 
 <script src="/static/app.js"></script>
 </body>

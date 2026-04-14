@@ -4,7 +4,7 @@ Real-time side-by-side comparison of three streaming speech-to-text models using
 
 - **AssemblyAI U3 Pro** — AssemblyAI's latest streaming model
 - **AssemblyAI Universal Streaming** — AssemblyAI's general-purpose streaming model
-- **Deepgram Nova-3** — Deepgram's latest streaming model
+- **Other STT Provider** — Third-party streaming model
 
 ## Setup
 
@@ -33,4 +33,4 @@ Then open http://localhost:8000 in your browser and click **Start Recording**.
 2. Audio chunks are sent simultaneously to all three provider WebSockets
 3. Each pane displays partial (interim) and final transcription results independently
 
-The Deepgram API key is optional. If `DEEPGRAM_API_KEY` is not set, the third pane will show a disabled message and the other two models will still work.
+The third-party STT API key is optional. If `DEEPGRAM_API_KEY` is not set, the third pane will show a disabled message and the other two models will still work.

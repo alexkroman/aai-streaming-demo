@@ -1,0 +1,35 @@
+{
+  "sample_rate": 16000,
+  "boxes": [
+    {
+      "name": "U3 Pro Streaming (Near Field NS)",
+      "provider": "assemblyai",
+      "environment": "staging",
+      "color": "#3b82f6",
+      "params": {
+        "speech_model": "u3-pro-rt",
+        "noise_suppression_model": "near-field"
+      }
+    },
+    {
+      "name": "U3 Pro Streaming (Near Field NS)",
+      "provider": "assemblyai",
+      "environment": "staging",
+      "color": "#3b82f6",
+      "params": {
+        "speech_model": "u3-pro-rt"
+      }
+    },
+    {
+      "name": "Deepgram Nova 3",
+      "provider": "deepgram",
+      "color": "#10b981",
+      "params": {
+        "model": "nova-3",
+        "punctuate": "true",
+        "smart_format": "true",
+        "interim_results": "true"
+      }
+    }
+  ]
+}
