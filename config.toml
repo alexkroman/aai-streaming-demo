@@ -17,23 +17,30 @@ api = "https://api.deepgram.com/v1"
 [environments.elevenlabs]
 wss = "wss://api.elevenlabs.io/v1/speech-to-text/realtime"
 
-[boxes."U3 Pro Streaming (Near Field NS)"]
+[boxes."(Krisp) U3 Pro Streaming"]
 provider = "assemblyai"
 environment = "staging"
 mode = "streaming"
 color = "#3b82f6"
 params = { speech_model = "u3-rt-pro", noise_suppression_model = "near-field" }
 
-[boxes."U3 Pro Streaming (No NS)"]
+[boxes."(Silero) U3 Pro Streaming"]
 provider = "assemblyai"
 environment = "staging"
 mode = "streaming"
 color = "#8b5cf6"
-params = { speech_model = "u3-rt-pro", vad_threshold = "0.5" }
+params = { speech_model = "u3-rt-pro", vad_threshold = "0.3" }
+
+[boxes."(Adaptive) U3 Pro Streaming"]
+provider = "assemblyai"
+environment = "staging"
+mode = "streaming"
+color = "#8b5cf6"
+params = { speech_model = "u3-rt-pro"}
 
 [boxes."Universal Streaming"]
 provider = "assemblyai"
-environment = "staging"
+environment = "production"
 mode = "streaming"
 color = "#a78bfa"
 params = { speech_model = "universal-streaming-english" }
