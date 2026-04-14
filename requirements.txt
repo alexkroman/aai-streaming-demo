@@ -1,6 +1,5 @@
-pipecat-ai-small-webrtc-prebuilt==2.4.0
-pipecat-ai[assemblyai,anthropic,rime,silero,webrtc]==0.0.108
-python-dotenv==1.2.2
 fastapi==0.135.3
 uvicorn[standard]==0.43.0
 httpx==0.28.1
+websockets>=13.0
+python-dotenv>=1.0.0

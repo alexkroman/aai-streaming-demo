@@ -3,12 +3,12 @@ const statusEl = document.getElementById("status");
 const columnsEl = document.getElementById("columns");
 
 let isRecording = false;
-let sockets = [];
+let ws = null;
 let audioContext = null;
 let workletNode = null;
 let stream = null;
 let boxConfig = null;
-const aaiCurrentTurn = {};
+const currentTurn = {};
 
 startBtn.addEventListener("click", async () => {
   if (isRecording) {
@@ -31,6 +31,7 @@ function buildColumns(boxes) {
   for (let i = 0; i < boxes.length; i++) {
     const box = boxes[i];
     const color = box.color || "#3b82f6";
+    const modeLabel = box.mode === "batch" ? " batch" : "";
 
     const col = document.createElement("div");
     col.className = "column";
@@ -44,7 +45,7 @@ function buildColumns(boxes) {
     badge.style.background = hexToRgba(color, 0.12);
     badge.style.color = color;
     badge.style.border = `1px solid ${hexToRgba(color, 0.25)}`;
-    badge.textContent = box.provider;
+    badge.textContent = box.provider + modeLabel;
 
     const title = document.createElement("h2");
     title.textContent = box.name;
@@ -68,6 +69,7 @@ function buildColumns(boxes) {
 
 function updatePartial(areaId, text) {
   const area = document.getElementById(areaId);
+  if (!area) return;
   let el = area.querySelector(".partial");
   if (!el) {
     el = document.createElement("div");
@@ -80,93 +82,68 @@ function updatePartial(areaId, text) {
 
 function finalizePartial(areaId) {
   const area = document.getElementById(areaId);
+  if (!area) return;
   const el = area.querySelector(".partial");
   if (el) el.className = "turn final";
   area.scrollTop = area.scrollHeight;
 }
 
+function showInfo(areaId, text) {
+  const area = document.getElementById(areaId);
+  if (!area) return;
+  area.querySelectorAll(".info").forEach((el) => el.remove());
+  const el = document.createElement("div");
+  el.className = "turn info";
+  el.textContent = text;
+  area.appendChild(el);
+  area.scrollTop = area.scrollHeight;
+}
+
 function clearArea(areaId) {
-  document.getElementById(areaId).replaceChildren();
+  const area = document.getElementById(areaId);
+  if (area) area.replaceChildren();
 }
 
-function connectSocket(url, protocols, { areaId, onMessage }) {
-  return new Promise((resolve, reject) => {
-    const ws = protocols ? new WebSocket(url, protocols) : new WebSocket(url);
-    ws.onopen = () => resolve(ws);
-    ws.onerror = () => reject(new Error(`WebSocket failed for ${areaId}`));
-    ws.onmessage = (event) => onMessage(JSON.parse(event.data));
-    sockets.push(ws);
-  });
-}
+function handleMessage(msg) {
+  if (msg.type === "done") {
+    statusEl.textContent = "Done";
+    return;
+  }
+  if (msg.type === "error" && msg.box === undefined) {
+    statusEl.textContent = "Error: " + msg.text;
+    return;
+  }
 
-function parseAAIMessage(areaId, msg) {
-  console.log(`[AAI ${areaId}]`, JSON.stringify(msg).slice(0, 300));
-  if (msg.type === "SpeechStarted") {
+  const areaId = `transcript-${msg.box}`;
+
+  if (msg.type === "speech_started") {
     const area = document.getElementById(areaId);
+    if (!area) return;
     const el = document.createElement("div");
     el.className = "turn speech-started";
     el.textContent = "Speech detected";
     area.appendChild(el);
     area.scrollTop = area.scrollHeight;
-    return;
-  }
-  if (msg.type === "Turn") {
-    const text = msg.transcript || msg.text || "";
-    if (!text) return;
-    const turnOrder = msg.turn_order;
-    if (aaiCurrentTurn[areaId] !== undefined && turnOrder !== aaiCurrentTurn[areaId]) {
-      finalizePartial(areaId);
+  } else if (msg.type === "partial") {
+    if (msg.turn_order !== undefined) {
+      if (currentTurn[areaId] !== undefined && msg.turn_order !== currentTurn[areaId]) {
+        finalizePartial(areaId);
+      }
+      currentTurn[areaId] = msg.turn_order;
     }
-    aaiCurrentTurn[areaId] = turnOrder;
-    updatePartial(areaId, text);
-    if (msg.end_of_turn) finalizePartial(areaId);
+    updatePartial(areaId, msg.text);
+  } else if (msg.type === "final") {
+    if (msg.turn_order !== undefined) {
+      if (currentTurn[areaId] !== undefined && msg.turn_order !== currentTurn[areaId]) {
+        finalizePartial(areaId);
+      }
+      currentTurn[areaId] = msg.turn_order;
+    }
+    updatePartial(areaId, msg.text);
+    finalizePartial(areaId);
+  } else if (msg.type === "info" || msg.type === "error") {
+    showInfo(areaId, msg.text);
   }
-}
-
-function parseDGMessage(areaId, msg) {
-  console.log(`[DG ${areaId}]`, JSON.stringify(msg).slice(0, 300));
-  if (msg.type === "Results") {
-    const transcript = msg.channel?.alternatives?.[0]?.transcript;
-    if (!transcript) return;
-    updatePartial(areaId, transcript);
-    if (msg.is_final) finalizePartial(areaId);
-  }
-}
-
-function buildWSUrl(base, params) {
-  const qs = new URLSearchParams(params).toString();
-  return `${base}?${qs}`;
-}
-
-function connectBox(box, index, sampleRate) {
-  const areaId = `transcript-${index}`;
-  const provider = box.provider;
-
-  if (provider === "assemblyai") {
-    const params = { sample_rate: sampleRate, ...box.params, token: box.token };
-    const url = buildWSUrl(box.wss_url, params);
-    return connectSocket(url, null, {
-      areaId,
-      onMessage: (msg) => parseAAIMessage(areaId, msg),
-    });
-  }
-
-  if (provider === "deepgram") {
-    const params = {
-      encoding: "linear16",
-      sample_rate: sampleRate,
-      channels: 1,
-      interim_results: "true",
-      ...box.params,
-    };
-    const url = buildWSUrl("wss://api.deepgram.com/v1/listen", params);
-    return connectSocket(url, ["token", box.api_key], {
-      areaId,
-      onMessage: (msg) => parseDGMessage(areaId, msg),
-    });
-  }
-
-  return Promise.reject(new Error(`Unknown provider: ${provider}`));
 }
 
 async function startRecording() {
@@ -180,6 +157,16 @@ async function startRecording() {
 
     buildColumns(boxes);
 
+    const proto = location.protocol === "https:" ? "wss:" : "ws:";
+    ws = new WebSocket(`${proto}//${location.host}/ws`);
+
+    await new Promise((resolve, reject) => {
+      ws.onopen = resolve;
+      ws.onerror = () => reject(new Error("WebSocket connection failed"));
+    });
+
+    ws.onmessage = (event) => handleMessage(JSON.parse(event.data));
+
     stream = await navigator.mediaDevices.getUserMedia({
       audio: { sampleRate, channelCount: 1, echoCancellation: true, noiseSuppression: true },
     });
@@ -190,17 +177,15 @@ async function startRecording() {
     workletNode = new AudioWorkletNode(audioContext, "pcm-processor");
     source.connect(workletNode);
 
-    await Promise.all(boxes.map((box, i) => connectBox(box, i, sampleRate)));
-
     workletNode.port.onmessage = (event) => {
-      for (const ws of sockets) {
-        if (ws.readyState === WebSocket.OPEN) ws.send(event.data);
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(event.data);
       }
     };
 
     for (let i = 0; i < boxes.length; i++) {
       clearArea(`transcript-${i}`);
-      delete aaiCurrentTurn[`transcript-${i}`];
+      delete currentTurn[`transcript-${i}`];
     }
 
     statusEl.textContent = "Recording — speak now";
@@ -218,7 +203,6 @@ function stopRecording() {
   isRecording = false;
   startBtn.textContent = "Start Recording";
   startBtn.classList.remove("recording");
-  statusEl.textContent = "Stopped";
 
   if (boxConfig) {
     for (let i = 0; i < boxConfig.boxes.length; i++) {
@@ -226,10 +210,11 @@ function stopRecording() {
     }
   }
 
-  for (const ws of sockets) {
-    if (ws.readyState === WebSocket.OPEN) ws.close();
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: "stop" }));
+    const hasBatch = boxConfig && boxConfig.boxes.some((b) => b.mode === "batch");
+    statusEl.textContent = hasBatch ? "Processing batch transcriptions..." : "Stopped";
   }
-  sockets = [];
 
   if (workletNode) { workletNode.disconnect(); workletNode = null; }
   if (audioContext) { audioContext.close(); audioContext = null; }

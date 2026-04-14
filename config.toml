@@ -1,0 +1,53 @@
+sample_rate = 16000
+
+[environments.production]
+wss = "wss://streaming.assemblyai.com/v3/ws"
+api = "https://api.assemblyai.com"
+token_url = "https://streaming.assemblyai.com/v3/token"
+
+[environments.staging]
+wss = "wss://streaming.sandbox000.assemblyai-labs.com/v3/ws"
+api = "https://api.sandbox000.assemblyai-labs.com"
+token_url = "https://streaming.sandbox000.assemblyai-labs.com/v3/token"
+
+[environments.deepgram]
+wss = "wss://api.deepgram.com/v1/listen"
+api = "https://api.deepgram.com/v1"
+
+[environments.elevenlabs]
+wss = "wss://api.elevenlabs.io/v1/speech-to-text/realtime"
+
+[boxes."U3 Pro Streaming (Near Field NS)"]
+provider = "assemblyai"
+environment = "staging"
+mode = "streaming"
+color = "#3b82f6"
+params = { speech_model = "u3-rt-pro", noise_suppression_model = "near-field" }
+
+[boxes."U3 Pro Streaming (No NS)"]
+provider = "assemblyai"
+environment = "staging"
+mode = "streaming"
+color = "#8b5cf6"
+params = { speech_model = "u3-rt-pro", vad_threshold = "0.5" }
+
+[boxes."Universal Streaming"]
+provider = "assemblyai"
+environment = "staging"
+mode = "streaming"
+color = "#a78bfa"
+params = { speech_model = "universal-streaming-english" }
+
+[boxes."Deepgram Nova 3"]
+provider = "deepgram"
+environment = "deepgram"
+mode = "streaming"
+color = "#10b981"
+params = { model = "nova-3", encoding = "linear16", channels = "1", punctuate = "true", smart_format = "true", interim_results = "true" }
+
+[boxes."ElevenLabs Scribe v2"]
+provider = "elevenlabs"
+environment = "elevenlabs"
+mode = "streaming"
+color = "#f59e0b"
+params = { model_id = "scribe_v2_realtime", audio_format = "pcm_16000", language_code = "en", commit_strategy = "vad" }
